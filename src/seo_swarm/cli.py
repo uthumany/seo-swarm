@@ -67,13 +67,36 @@ def show_dashboard(args):
 
 
 def show_agents(args):
-    """List all agents with their ASCII art profile cards."""
+    """List all agents with pixel art portraits or ASCII cards."""
     registry = AgentRegistry()
-    if args.art:
-        ASCIIBanners().show_agent_cards(registry.get_all())
+    banner = ASCIIBanners()
+    if args.pixel_gallery:
+        banner.show_pixel_gallery(registry.get_all())
+    elif args.pixel_cards:
+        banner.show_agent_cards(registry.get_all())
+    elif args.art:
+        banner.show_agent_cards(registry.get_all())  # fallback to pixel cards
+    elif args.row:
+        banner.show_agent_row(registry.get_all())
     else:
         for agent in registry.get_all():
             print(f"  [{agent.color}]{agent.emoji} {agent.name:<30} {agent.role}")
+
+
+def show_portrait(args):
+    """Show a single agent's pixel art portrait."""
+    registry = AgentRegistry()
+    agent = registry.get(args.name)
+    if agent:
+        ASCIIBanners().show_agent_portrait(agent, full=not args.compact)
+    else:
+        print(f"Agent '{args.name}' not found. Available: {', '.join(registry.list_ids())}")
+
+
+def show_pixel_gallery(args):
+    """Show the full pixel art gallery of all agents."""
+    registry = AgentRegistry()
+    ASCIIBanners().show_pixel_gallery(registry.get_all())
 
 
 def install_skills(args):
@@ -100,15 +123,20 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  seo-swarm audit https://example.com           # Run full SEO audit
-  seo-swarm audit https://example.com --json    # JSON output
+  seo-swarm audit https://example.com              # Run full SEO audit
+  seo-swarm audit https://example.com --json       # JSON output
   seo-swarm agent technical-seo --url example.com
-  seo-swarm swarm https://example.com            # All agents in parallel
-  seo-swarm dashboard                            # Interactive TUI
-  seo-swarm agents --art                         # Agent cards with ASCII art
-  seo-swarm browser https://example.com          # Autonomous browser control
-  seo-swarm install-skills                       # Install preloaded skills
-  seo-swarm memory "keyword research"            # Search memory
+  seo-swarm swarm https://example.com                # All agents in parallel
+  seo-swarm dashboard                                # Interactive TUI
+  seo-swarm agents --pixel-cards                     # Pixel art agent cards
+  seo-swarm agents --pixel-gallery                   # Pixel art gallery grid
+  seo-swarm pixel-gallery                            # Full pixel art gallery
+  seo-swarm portrait technical-seo                   # Single agent pixel portrait
+  seo-swarm portrait seo-strategist --compact        # Compact portrait
+  seo-swarm agents --row                             # Compact agent row view
+  seo-swarm browser https://example.com              # Autonomous browser
+  seo-swarm install-skills                           # Install preloaded skills
+  seo-swarm memory "keyword research"                # Search memory
 """
     )
 
@@ -140,7 +168,18 @@ Examples:
 
     # agents command
     p_agents = subparsers.add_parser("agents", help="List all SEO agents")
-    p_agents.add_argument("--art", "-a", action="store_true", help="Show ASCII art cards")
+    p_agents.add_argument("--art", "-a", action="store_true", help="Show pixel art agent cards")
+    p_agents.add_argument("--pixel-cards", "-p", action="store_true", help="Show detailed pixel art cards")
+    p_agents.add_argument("--pixel-gallery", "-g", action="store_true", help="Show pixel art gallery grid")
+    p_agents.add_argument("--row", "-r", action="store_true", help="Show compact row view")
+
+    # portrait command
+    p_portrait = subparsers.add_parser("portrait", help="Show single agent pixel art portrait")
+    p_portrait.add_argument("name", help="Agent ID (e.g., technical-seo, seo-strategist)")
+    p_portrait.add_argument("--compact", "-c", action="store_true", help="Compact portrait only")
+
+    # pixel-gallery command
+    subparsers.add_parser("pixel-gallery", help="Show full pixel art gallery grid")
 
     # install-skills command
     subparsers.add_parser("install-skills", help="Install preloaded SEO skills")
@@ -162,6 +201,8 @@ Examples:
         "swarm": run_swarm,
         "dashboard": show_dashboard,
         "agents": show_agents,
+        "portrait": show_portrait,
+        "pixel-gallery": show_pixel_gallery,
         "install-skills": install_skills,
         "skills": lambda a: SkillLoader().list_skills(a.search if hasattr(a, 'search') else None),
         "memory": search_memory,

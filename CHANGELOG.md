@@ -2,93 +2,44 @@
 
 All notable changes to SEO SWARM will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.0] - 2025-06-27
+
+### Added — Pixel Art Agent Portraits 🎨
+- Complete pixel art engine (`pixel_art.py`) with 16×16 agent portraits
+- 10 unique pixel art portraits designed for terminal rendering
+- 3-level shading system (empty, light, solid) using Unicode block characters
+- 8 color palettes matching each agent's theme (cyan, green, magenta, yellow, blue, red, white, gray)
+- Pixel art gallery grid view (`seo-swarm agents --pixel-gallery`)
+- Detailed pixel art agent cards with metadata (`seo-swarm agents --pixel-cards`)
+- Compact agent row view with pixel portraits (`seo-swarm agents --row`)
+- Single agent pixel portrait command (`seo-swarm portrait <agent-id>`)
+- Dedicated `seo-swarm pixel-gallery` command
+- Compact portrait mode (`--compact` flag)
+- Retro GameBoy-era styling with one-line art
+
+### Changed
+- Agent card display now defaults to pixel art (replaces ASCII line art)
+- Banner updated to v1.1.0 with pixel art indicators
+- Help text updated with all new pixel art commands
+
+### Technical
+- `PixelRenderer` class with deterministic 16×16 → terminal rendering
+- Hex-encoded pixel data format for compact agent portrait storage
+- Row/cell normalization for robust pixel art parsing
+- Fixed-width 2-character-per-cell rendering for clean grid alignment
 
 ## [1.0.0] - 2025-06-27
 
 ### Added — Initial Release 🚀
-
-#### Agents (10 specialized SEO agents)
-- 🧠 SEO Strategist — Strategy & Roadmap agent
-- 🔧 Technical SEO Specialist — Site Architecture & Crawling agent
-- ✍️ Content SEO Specialist — Content Strategy & Optimization agent
-- 🔍 On-Page SEO Analyst — Page Element Auditing agent
-- 🔗 Off-Page SEO Specialist — Link Building & Authority agent
-- 📍 Local SEO Specialist — Geo & Local Search agent
-- 💻 SEO Developer — Code-Level Implementation agent
-- 📊 SEO Data Analyst — Analytics & Reporting agent
-- 🎙️ Voice Search Specialist — Voice & Conversational SEO agent
-- 📱 Mobile & PWA SEO Specialist — Mobile-First & PWA agent
-
-#### Core Features
+- 10 specialized SEO agents with profile cards
 - Parallel swarm execution engine (ThreadPoolExecutor)
-- Self-improving memory system (SQLite-based)
+- Self-improving memory system (SQLite)
 - Terminal UI dashboard with ANSI colors
-- ASCII art agent profile cards (10 unique designs)
-- One-line ASCII emoticons for status indicators
+- ASCII art agent profile cards
+- 30+ preloaded SEO skills
+- 10 browser automation skills
+- 11 package manager installation methods
+- Full documentation suite
 
-#### Preloaded Content
-- 20+ SEO skills from GitHub repositories
-- 10 browser automation skills (Browser Use, Skyvern, Stagehand, etc.)
-- Skill auto-installation system
-
-#### Browser Automation
-- Autonomous page navigation engine
-- Meta data extraction
-- Header hierarchy analysis
-- Performance auditing (LCP, FID, CLS, TTFB)
-- Mobile-friendly checks
-- Schema/structured data extraction
-- Link extraction
-- Site crawling simulation
-
-#### CLI Commands
-- `audit` — Full SEO audit with agent selection
-- `swarm` — Parallel all-agent execution
-- `agent` — Single agent execution
-- `browser` — Autonomous browser control
-- `dashboard` — Interactive terminal dashboard
-- `agents` — Agent listing with ASCII art
-- `install-skills` — Preloaded skill installation
-- `skills` — Skill search and listing
-- `memory` — Memory database search
-
-#### Installation (11 methods)
-- npm, yarn, pnpm, bun, deno, cnpm, Rush, Lerna, Volta, pip, uv
-- Curl pipe-to-bash one-line installer
-- PowerShell installer
-- GitHub source clone
-
-#### Documentation
-- Comprehensive README.md with SEO-optimized content
-- CHANGELOG.md (this file)
-- CONTRIBUTING.md
-- LICENSE (MIT)
-- GitHub issue templates (bug report, feature request)
-- Pull request template
-- GitHub Actions CI/CD workflow
-
-#### Compatibility
-- 60+ AI agent platform compatible
-- 15 Autonomous Agentic AI Agents
-- 15 CLI Autonomous Agents
-- 15 IDE Autonomous Agents
-- 15 Web Autonomous Agents
-
-#### Package Metadata
-- npm package with 25 SEO-optimized keywords
-- PyPI package with 13 classifiers
-- GitHub repository topics: seo, seo-automation, autonomous-agents, swarm-intelligence, cli-tool, terminal-ui, multi-agent, self-improving, memory-system
-- SEO-friendly title, description, and summary
-- Social card previews (OG + Twitter)
-
-### Technical Details
-- Python 3.8+ with zero external dependencies
-- Node.js 14+ wrapper for npm compatibility
-- SQLite for memory without database server dependency
-- ANSI color codes for universal terminal support
-- Thread-based parallelism for swarm execution
-- Modular architecture (agents, tui, ascii, memory, skills, browser)
-
+[1.1.0]: https://github.com/uthumany/seo-swarm/releases/tag/v1.1.0
 [1.0.0]: https://github.com/uthumany/seo-swarm/releases/tag/v1.0.0
