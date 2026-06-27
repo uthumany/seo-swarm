@@ -62,7 +62,26 @@ def run_swarm(args):
 
 
 def show_dashboard(args):
-    """Display the interactive terminal dashboard."""
+    """Display the interactive terminal dashboard — auto-detects enhanced TUI."""
+    from pathlib import Path
+    import json
+    cfg = Path.home() / ".seo-swarm" / "config.json"
+    mode = "classic"
+    if cfg.exists():
+        try:
+            config = json.loads(cfg.read_text() or "{}")
+            mode = config.get("tui_mode", "classic")
+        except json.JSONDecodeError:
+            pass
+
+    if mode == "enhanced":
+        try:
+            from seo_swarm.tui.dashboard_v2 import DashboardV2
+            DashboardV2().show()
+            return
+        except ImportError:
+            pass  # Fall back to classic
+
     TerminalDashboard().show()
 
 
@@ -277,10 +296,10 @@ def run_monitor(args):
     if args.alerts:
         alerts = monitor.check_alerts(args.url)
         for a in alerts:
-            sev = {"critical": "🔴", "warning": "🟡", "info": "🔵"}.get(a.severity, "⚪")
+            sev = {"critical": "\U0001f534", "warning": "\U0001f7e1", "info": "\U0001f535"}.get(a.severity, "\u26aa")
             print(f"  {sev} [{a.severity.upper()}] {a.message}")
         if not alerts:
-            print("  ✅ No active alerts")
+            print("  \u2705 No active alerts")
     elif args.history:
         snapshots = monitor.get_history(args.url)
         for s in snapshots:
@@ -290,11 +309,59 @@ def run_monitor(args):
         for t in trend:
             print(f"  [{t[0]}] {t[1]:.1f}")
     else:
-        # Take a new snapshot
         scorecard = ScorecardEngine().calculate(args.url)
         sid = monitor.take_snapshot(args.url, scorecard.to_dict())
         print(f"  Snapshot saved: {sid}")
         print(f"  Score: {scorecard.total_score:.1f}  Grade: {scorecard.grade}")
+
+
+# ── v1.3.0 TUI/UX Handlers ────────────────────────────────────────
+
+def run_theme(args):
+    """Switch terminal color theme."""
+    try:
+        from seo_swarm.tui.themes import ThemeManager
+        tm = ThemeManager()
+    except ImportError:
+        print("  Themes coming soon — install v1.3.0+")
+        return
+
+    if args.list:
+        for name in tm.list_themes():
+            current = " (active)" if name == tm.current.name else ""
+            print(f"  \u25cf {name}{current}")
+    elif args.name:
+        tm.apply(args.name)
+        print(f"  \u2728 Theme switched to: {args.name}")
+    else:
+        print(f"  Current theme: {tm.current.name}")
+        print("  Available: " + ", ".join(tm.list_themes()))
+
+
+def run_tui_mode(args):
+    """Toggle TUI mode between classic and enhanced."""
+    if args.mode:
+        from pathlib import Path
+        cfg = Path.home() / ".seo-swarm" / "config.json"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        import json
+        config = {}
+        if cfg.exists():
+            config = json.loads(cfg.read_text() or "{}")
+        config["tui_mode"] = args.mode
+        cfg.write_text(json.dumps(config, indent=2))
+        print(f"  TUI mode set to: {args.mode}")
+    else:
+        from pathlib import Path
+        cfg = Path.home() / ".seo-swarm" / "config.json"
+        mode = "classic"
+        if cfg.exists():
+            import json
+            config = json.loads(cfg.read_text() or "{}")
+            mode = config.get("tui_mode", "classic")
+        print(f"  Current TUI mode: {mode}")
+        print("  Use: seo-swarm tui classic  or  seo-swarm tui enhanced")
+        print(f"  Use: seo-swarm tui classic  or  seo-swarm tui enhanced")
 
 
 def main():
@@ -441,6 +508,17 @@ Examples:
     p_mon.add_argument("--alerts", "-a", action="store_true", help="Show active alerts")
     p_mon.add_argument("--trend", "-t", help="Show trend for specific metric")
 
+    # -- v1.3.0 TUI/UX commands --
+
+    # theme command
+    p_theme = subparsers.add_parser("theme", help="Switch terminal color theme")
+    p_theme.add_argument("name", nargs="?", help="Theme name (default, neon, forest, ocean, sunset, mono)")
+    p_theme.add_argument("--list", "-l", action="store_true", help="List available themes")
+
+    # tui-mode command
+    p_tui = subparsers.add_parser("tui", help="Toggle TUI mode (classic or enhanced)")
+    p_tui.add_argument("mode", nargs="?", choices=["classic", "enhanced"], help="TUI mode")
+
     args = parser.parse_args()
 
     commands = {
@@ -466,6 +544,9 @@ Examples:
         "backlinks": run_backlinks,
         "content-analyze": run_content_analyze,
         "monitor": run_monitor,
+        # v1.3.0 TUI/UX
+        "theme": run_theme,
+        "tui": run_tui_mode,
     }
 
     if args.command in commands:
