@@ -113,6 +113,190 @@ def search_memory(args):
         print(f"  [{r['score']:.2f}] {r['key']}: {r['value'][:120]}...")
 
 
+# ── v1.2.0 Advanced Feature Handlers ──────────────────────────────
+
+def run_scorecard(args):
+    """Calculate SEO scorecard (0-100 scoring across 5 dimensions)."""
+    from seo_swarm.scoring.engine import ScorecardEngine
+    engine = ScorecardEngine()
+    result = engine.calculate(args.url)
+    if args.json:
+        print(json.dumps(result.to_dict(), indent=2))
+    else:
+        TerminalDashboard().render_scorecard(result)
+
+
+def run_crawl(args):
+    """Crawl a website for real SEO data."""
+    from seo_swarm.crawler.engine import CrawlerEngine
+    engine = CrawlerEngine()
+    result = engine.crawl(args.url, max_pages=args.max_pages, max_depth=args.depth)
+    print(f"\n  Crawled: {len(result.pages)} pages from {args.url}")
+    print(f"  Total links: {result.total_links}  |  Broken: {result.broken_links}")
+    for p in result.pages[:10]:
+        print(f"    [{p.status}] {p.url}")
+
+
+def run_report(args):
+    """Generate SEO audit report (HTML or Markdown)."""
+    from seo_swarm.agents.orchestrator import AgentOrchestrator
+    from seo_swarm.reporting.generator import ReportGenerator
+    from seo_swarm.scoring.engine import ScorecardEngine
+
+    orchestrator = AgentOrchestrator()
+    scorecard = ScorecardEngine().calculate(args.url)
+    audit = orchestrator.run_audit(args.url)
+    combined = {"scorecard": scorecard.to_dict(), "audit": audit}
+
+    gen = ReportGenerator()
+    fmt = args.format if args.format != "md" else "markdown"
+    out = args.output or f"seo-swarm-report.{'md' if fmt == 'markdown' else 'html'}"
+    path = gen.generate_html(combined, out) if fmt == "html" else gen.generate_markdown(combined, out)
+    print(f"  Report generated: {path}")
+
+
+def run_competitor(args):
+    """Compare against competitor URLs."""
+    from seo_swarm.competitor.engine import CompetitorEngine
+    engine = CompetitorEngine()
+    report = engine.compare(args.url, args.competitors)
+    if args.json:
+        print(json.dumps(report.to_dict(), indent=2))
+    else:
+        TerminalDashboard().render_competitor(report)
+
+
+def run_sitemap(args):
+    """Generate or validate XML sitemaps."""
+    from seo_swarm.sitemap.generator import SitemapGenerator
+    gen = SitemapGenerator()
+    if args.validate:
+        result = gen.validate(args.validate)
+        print(json.dumps(result, indent=2))
+    elif args.urls:
+        urls = [{"loc": u} for u in args.urls]
+        path = gen.generate(urls, args.output)
+        print(f"  Sitemap generated: {path}")
+    elif args.from_crawl:
+        from seo_swarm.crawler.engine import CrawlerEngine
+        crawler = CrawlerEngine()
+        crawl = crawler.crawl(args.from_crawl, max_pages=100)
+        urls = [{"loc": p.url} for p in crawl.pages]
+        path = gen.generate(urls, args.output)
+        print(f"  Sitemap from crawl: {path} ({len(urls)} URLs)")
+    else:
+        print("  Use --urls, --from-crawl, or --validate")
+
+
+def run_schema_gen(args):
+    """Generate JSON-LD schema markup."""
+    from seo_swarm.schema_gen.generator import SchemaGenerator
+    gen = SchemaGenerator()
+    if args.list:
+        print("  Available schema types:")
+        for t in gen.list_types():
+            print(f"    - {t}")
+    else:
+        data = json.loads(args.data) if args.data else {}
+        result = gen.generate(args.type, data)
+        print(result)
+
+
+def run_track(args):
+    """Keyword rank tracking."""
+    from seo_swarm.tracker.engine import RankTracker
+    tracker = RankTracker()
+    if args.summary:
+        summary = tracker.get_summary()
+        print(json.dumps(summary, indent=2))
+    elif args.trends:
+        trends = tracker.get_trends()
+        print(f"\n  Top Gainers:")
+        for t in trends.get("gainers", [])[:5]:
+            print(f"    ↑ +{t['change']}  {t['keyword']} → pos {t['position']}")
+        print(f"  Top Losers:")
+        for t in trends.get("losers", [])[:5]:
+            print(f"    ↓ {t['change']}  {t['keyword']} → pos {t['position']}")
+    elif args.history:
+        history = tracker.get_history(args.keyword)
+        for h in history:
+            print(f"  [{h['date']}] pos {h['position']} — {h['keyword']}")
+    else:
+        result = tracker.track(args.keyword, args.url or "https://example.com")
+        print(f"  Keyword: {result['keyword']}  |  Position: {result['position']}")
+
+
+def run_backlinks(args):
+    """Analyze backlink profile."""
+    from seo_swarm.backlinks.engine import BacklinkAnalyzer
+    analyzer = BacklinkAnalyzer()
+    if args.compare:
+        result = analyzer.compare_domains([args.domain] + args.compare)
+        print(json.dumps(result, indent=2))
+    else:
+        profile = analyzer.analyze_domain(args.domain)
+        print(f"\n  Domain: {args.domain}")
+        print(f"  Authority: {profile.domain_authority}/100")
+        print(f"  Backlinks: {profile.total_backlinks}  |  Ref Domains: {profile.referring_domains}")
+        print(f"  Spam Score: {profile.spam_score}%")
+
+
+def run_content_analyze(args):
+    """Analyze content quality."""
+    from seo_swarm.content_analyzer.engine import ContentAnalyzer
+    analyzer = ContentAnalyzer()
+    text = ""
+    if args.text:
+        text = args.text
+    elif args.file:
+        text = open(args.file).read()
+    elif args.url:
+        # try to fetch
+        import urllib.request
+        try:
+            text = urllib.request.urlopen(args.url, timeout=10).read().decode()
+        except:
+            text = f"Sample content from {args.url} for analysis."
+    else:
+        print("  Provide --text, --url, or --file")
+        return
+
+    result = analyzer.analyze(text, args.keyword)
+    print(f"\n  Readability: {result.readability_score:.1f} (Grade {result.grade_level})")
+    print(f"  Word Count: {result.word_count}  |  Sentences: {result.sentence_count}")
+    if result.keyword_density is not None:
+        print(f"  Keyword Density: {result.keyword_density:.1f}%")
+
+
+def run_monitor(args):
+    """SEO health monitoring."""
+    from seo_swarm.monitor.engine import HealthMonitor
+    from seo_swarm.scoring.engine import ScorecardEngine
+
+    monitor = HealthMonitor()
+    if args.alerts:
+        alerts = monitor.check_alerts(args.url)
+        for a in alerts:
+            sev = {"critical": "🔴", "warning": "🟡", "info": "🔵"}.get(a.severity, "⚪")
+            print(f"  {sev} [{a.severity.upper()}] {a.message}")
+        if not alerts:
+            print("  ✅ No active alerts")
+    elif args.history:
+        snapshots = monitor.get_history(args.url)
+        for s in snapshots:
+            print(f"  [{s.timestamp}] Score: {s.total_score:.0f}  Issues: {s.total_issues}  Status: {s.status}")
+    elif args.trend:
+        trend = monitor.get_trend_data(args.url, args.trend)
+        for t in trend:
+            print(f"  [{t[0]}] {t[1]:.1f}")
+    else:
+        # Take a new snapshot
+        scorecard = ScorecardEngine().calculate(args.url)
+        sid = monitor.take_snapshot(args.url, scorecard.to_dict())
+        print(f"  Snapshot saved: {sid}")
+        print(f"  Score: {scorecard.total_score:.1f}  Grade: {scorecard.grade}")
+
+
 def main():
     """Main CLI entry point."""
     ASCIIBanners().print_banner()
@@ -192,6 +376,71 @@ Examples:
     p_memory = subparsers.add_parser("memory", help="Search local memory")
     p_memory.add_argument("query", help="Search query")
 
+    # -- NEW v1.2.0 Advanced Commands --
+
+    # scorecard command
+    p_score = subparsers.add_parser("scorecard", help="Calculate SEO scorecard (0-100)")
+    p_score.add_argument("url", help="Target URL")
+    p_score.add_argument("--json", "-j", action="store_true", help="JSON output")
+
+    # crawl command
+    p_crawl = subparsers.add_parser("crawl", help="Crawl a website for SEO data")
+    p_crawl.add_argument("url", help="Target URL")
+    p_crawl.add_argument("--max-pages", "-m", type=int, default=50, help="Max pages to crawl")
+    p_crawl.add_argument("--depth", "-d", type=int, default=3, help="Crawl depth")
+
+    # report command
+    p_report = subparsers.add_parser("report", help="Generate SEO audit report")
+    p_report.add_argument("url", help="Target URL")
+    p_report.add_argument("--format", "-f", choices=["html", "markdown", "md"], default="html")
+    p_report.add_argument("--output", "-o", help="Output file path")
+
+    # competitor command
+    p_comp = subparsers.add_parser("competitor", help="Compare against competitors")
+    p_comp.add_argument("url", help="Target URL")
+    p_comp.add_argument("--competitors", "-c", nargs="+", required=True, help="Competitor URLs")
+    p_comp.add_argument("--json", "-j", action="store_true")
+
+    # sitemap command
+    p_sm = subparsers.add_parser("sitemap", help="Generate XML sitemap")
+    p_sm.add_argument("--urls", "-u", nargs="+", help="URLs to include")
+    p_sm.add_argument("--from-crawl", "-c", help="Generate from crawl of this URL")
+    p_sm.add_argument("--output", "-o", default="sitemap.xml", help="Output path")
+    p_sm.add_argument("--validate", "-v", help="Validate existing sitemap file")
+
+    # schema command
+    p_schema = subparsers.add_parser("schema", help="Generate JSON-LD schema markup")
+    p_schema.add_argument("--type", "-t", required=True, help="Schema type (Organization, Article, FAQ, Product, etc.)")
+    p_schema.add_argument("--data", "-d", default="{}", help="JSON data for schema")
+    p_schema.add_argument("--list", "-l", action="store_true", help="List available schema types")
+
+    # rank-tracker command
+    p_track = subparsers.add_parser("track", help="Keyword rank tracking")
+    p_track.add_argument("keyword", help="Keyword to track")
+    p_track.add_argument("--url", "-u", help="Target URL")
+    p_track.add_argument("--history", "-H", action="store_true", help="Show history")
+    p_track.add_argument("--trends", action="store_true", help="Show ranking trends")
+    p_track.add_argument("--summary", "-s", action="store_true", help="Show tracking summary")
+
+    # backlinks command
+    p_bl = subparsers.add_parser("backlinks", help="Analyze backlink profile")
+    p_bl.add_argument("domain", help="Domain to analyze")
+    p_bl.add_argument("--compare", "-c", nargs="+", help="Compare multiple domains")
+
+    # content-analyze command
+    p_ca = subparsers.add_parser("content-analyze", help="Analyze content quality")
+    p_ca.add_argument("--text", "-t", help="Text to analyze")
+    p_ca.add_argument("--url", "-u", help="URL to fetch and analyze")
+    p_ca.add_argument("--keyword", "-k", help="Target keyword for density check")
+    p_ca.add_argument("--file", "-f", help="File containing text to analyze")
+
+    # monitor command
+    p_mon = subparsers.add_parser("monitor", help="SEO health monitoring")
+    p_mon.add_argument("url", help="Target URL")
+    p_mon.add_argument("--history", "-H", action="store_true", help="Show health history")
+    p_mon.add_argument("--alerts", "-a", action="store_true", help="Show active alerts")
+    p_mon.add_argument("--trend", "-t", help="Show trend for specific metric")
+
     args = parser.parse_args()
 
     commands = {
@@ -206,6 +455,17 @@ Examples:
         "install-skills": install_skills,
         "skills": lambda a: SkillLoader().list_skills(a.search if hasattr(a, 'search') else None),
         "memory": search_memory,
+        # v1.2.0 advanced features
+        "scorecard": run_scorecard,
+        "crawl": run_crawl,
+        "report": run_report,
+        "competitor": run_competitor,
+        "sitemap": run_sitemap,
+        "schema": run_schema_gen,
+        "track": run_track,
+        "backlinks": run_backlinks,
+        "content-analyze": run_content_analyze,
+        "monitor": run_monitor,
     }
 
     if args.command in commands:

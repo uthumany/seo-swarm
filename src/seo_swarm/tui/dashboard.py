@@ -96,6 +96,58 @@ class TerminalDashboard:
         print()
         self.render_audit_results(results)
 
+    def render_scorecard(self, scorecard):
+        """Render SEO scorecard in terminal with colored bars."""
+        self.clear_screen()
+        c = COLORS
+        print(c["bright_cyan"] + c["bold"] + "=" * 80 + c["reset"])
+        print(c["bright_yellow"] + c["bold"] + f"  SEO SCORECARD: {scorecard.target_url}" + c["reset"])
+        print(c["bright_cyan"] + "=" * 80 + c["reset"])
+        print()
+
+        # Total score
+        grade_color = {"A+": c["bright_green"], "A": c["bright_green"],
+                       "B+": c["bright_cyan"], "B": c["bright_cyan"],
+                       "C+": c["bright_yellow"], "C": c["bright_yellow"],
+                       "D": c["bright_red"], "F": c["bright_red"]}
+        gc = grade_color.get(scorecard.grade[0] if scorecard.grade else "C", c["white"])
+        print(f"  {c['bold']}OVERALL SCORE: {gc}{scorecard.total_score:.1f}/100  [{scorecard.grade}]{c['reset']}")
+        print()
+
+        # Dimension bars
+        for d in scorecard.dimensions:
+            bar_width = int(d.score / 100 * 40)
+            bar_color = {"excellent": c["bright_green"], "good": c["bright_cyan"],
+                         "fair": c["bright_yellow"], "poor": c["bright_red"],
+                         "critical": c["bright_red"]}.get(d.status, c["white"])
+            bar = bar_color + "\u2588" * bar_width + c["dim"] + "\u2591" * (40 - bar_width) + c["reset"]
+            print(f"  {d.name:<20} {bar} {d.score:.0f}%  [{d.status.upper()}]")
+
+        print()
+        print(c["bright_white"] + c["bold"] + f"  RECOMMENDATIONS ({scorecard.total_recommendations}):" + c["reset"])
+        for d in scorecard.dimensions:
+            for r in d.recommendations[:2]:
+                print(f"    {c['bright_yellow']}\u25b6{c['reset']} {r}")
+        print()
+
+    def render_competitor(self, report):
+        """Render competitor analysis in terminal."""
+        c = COLORS
+        self.clear_screen()
+        print(c["bright_cyan"] + c["bold"] + "=" * 80 + c["reset"])
+        print(c["bright_blue"] + c["bold"] + f"  COMPETITOR ANALYSIS: {report.target}" + c["reset"])
+        print(c["bright_cyan"] + "=" * 80 + c["reset"])
+        print()
+
+        for comp in report.competitors:
+            print(f"  {c['bold']}{comp.url}{c['reset']}")
+            print(f"    Title: {comp.title[:60]}")
+            print(f"    Meta: {comp.description[:60]}")
+            print(f"    Headers: {comp.headers.get('h1', ['N/A'])[0]}")
+            print(f"    Word Count: {comp.word_count}")
+            print(f"    Gaps vs target: {len(report.gaps.get(comp.url, []))}")
+            print()
+
     def _show_agent_panel(self):
         """Show the agent status panel."""
         from seo_swarm.agents.registry import AgentRegistry
