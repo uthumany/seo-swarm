@@ -30,6 +30,9 @@ from seo_swarm.tui.layout import Layout, Columns, FlexRow, StatusBar
 from seo_swarm.tui.dashboard import TerminalDashboard, COLORS
 from seo_swarm.tui.dashboard_v2 import DashboardV2
 
+# Interactive REPL
+from seo_swarm.tui.repl import SwarmREPL
+
 __all__ = [
     # Widgets
     "Box", "Panel", "Table", "Tree", "Divider",
@@ -47,4 +50,6 @@ __all__ = [
     "Layout", "Columns", "FlexRow", "StatusBar",
     # Dashboards
     "TerminalDashboard", "DashboardV2", "COLORS",
+    # REPL
+    "SwarmREPL",
 ]

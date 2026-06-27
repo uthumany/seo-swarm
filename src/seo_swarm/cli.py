@@ -366,6 +366,12 @@ def run_tui_mode(args):
 
 def main():
     """Main CLI entry point."""
+    # No arguments — launch interactive REPL (Hermes Agent-style)
+    if len(sys.argv) == 1:
+        from seo_swarm.tui.repl import SwarmREPL
+        SwarmREPL().run()
+        return
+
     ASCIIBanners().print_banner()
 
     parser = argparse.ArgumentParser(
@@ -374,8 +380,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  seo-swarm audit https://example.com              # Run full SEO audit
-  seo-swarm audit https://example.com --json       # JSON output
+  seo-swarm                                          # Launch interactive chat mode (RECOMMENDED)
+  seo-swarm interactive                              # Explicit REPL launch
+  seo-swarm audit https://example.com                # Run full SEO audit
+  seo-swarm audit https://example.com --json         # JSON output
   seo-swarm agent technical-seo --url example.com
   seo-swarm swarm https://example.com                # All agents in parallel
   seo-swarm dashboard                                # Interactive TUI
@@ -416,6 +424,9 @@ Examples:
 
     # dashboard command
     subparsers.add_parser("dashboard", help="Show interactive terminal dashboard")
+
+    # interactive command
+    subparsers.add_parser("interactive", help="Launch interactive chat mode (REPL)")
 
     # agents command
     p_agents = subparsers.add_parser("agents", help="List all SEO agents")
@@ -527,6 +538,7 @@ Examples:
         "browser": run_browser,
         "swarm": run_swarm,
         "dashboard": show_dashboard,
+        "interactive": lambda a: __import__("seo_swarm.tui.repl", fromlist=["SwarmREPL"]).SwarmREPL().run(),  # Explicit REPL launch
         "agents": show_agents,
         "portrait": show_portrait,
         "pixel-gallery": show_pixel_gallery,
