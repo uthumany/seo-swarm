@@ -1,0 +1,73 @@
+{
+  "name": "seo-swarm",
+  "version": "1.0.0",
+  "description": "Autonomous SEO Swarm Agents CLI - Multi-agent SEO automation platform with 10 specialized agents, browser automation, and self-improving memory",
+  "main": "cli.js",
+  "bin": {
+    "seo-swarm": "cli.js"
+  },
+  "files": [
+    "cli.js",
+    "src/",
+    "skills/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "node cli.js",
+    "test": "python -m pytest tests/ -v",
+    "install:all": "npm install && pip install -e .",
+    "postinstall": "node scripts/postinstall.js"
+  },
+  "keywords": [
+    "seo",
+    "seo-automation",
+    "seo-swarm",
+    "seo-agents",
+    "autonomous-agents",
+    "multi-agent",
+    "seo-audit",
+    "technical-seo",
+    "on-page-seo",
+    "off-page-seo",
+    "local-seo",
+    "content-seo",
+    "voice-search",
+    "mobile-seo",
+    "pwa-seo",
+    "browser-automation",
+    "cli-tool",
+    "terminal-ui",
+    "ascii-art",
+    "search-engine-optimization",
+    "ai-agents",
+    "swarm-intelligence",
+    "seo-pipeline",
+    "self-improving",
+    "memory-system"
+  ],
+  "author": {
+    "name": "uthuman Inc",
+    "email": "dev@uthuman.com",
+    "url": "https://github.com/uthumany"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uthumany/seo-swarm"
+  },
+  "homepage": "https://github.com/uthumany/seo-swarm#readme",
+  "bugs": {
+    "url": "https://github.com/uthumany/seo-swarm/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "figlet": "^1.7.0",
+    "ora": "^8.0.0"
+  }
+}

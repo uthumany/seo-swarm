@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seo-swarm"
+version = "1.0.0"
+description = "Autonomous SEO Swarm Agents CLI - Multi-agent SEO automation platform"
+readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "uthuman Inc", email = "dev@uthuman.com"}
+]
+requires-python = ">=3.8"
+dependencies = []
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/uthumany/seo-swarm"
+Documentation = "https://github.com/uthumany/seo-swarm#readme"
+Repository = "https://github.com/uthumany/seo-swarm"
+Issues = "https://github.com/uthumany/seo-swarm/issues"
+Changelog = "https://github.com/uthumany/seo-swarm/blob/main/CHANGELOG.md"
+
+[project.scripts]
+seo-swarm = "seo_swarm.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-cov>=4.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+seo_swarm = ["*.json", "*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
